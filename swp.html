@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWP Calculator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .calculator-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e8f4fc;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .result-item {
+            margin-bottom: 15px;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .result-value {
+            font-size: 18px;
+            color: #3498db;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        .error {
+            color: #e74c3c;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .calculator-container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Systematic Withdrawal Plan (SWP) Calculator</h1>
+    
+    <div class="calculator-container">
+        <div class="input-group">
+            <label for="principal">Initial Investment Amount (₹)</label>
+            <input type="number" id="principal" placeholder="e.g. 1000000">
+            <div class="error" id="principal-error">Please enter a valid amount</div>
+        </div>
+        
+        <div class="input-group">
+            <label for="withdrawal">Withdrawal Amount (₹)</label>
+            <input type="number" id="withdrawal" placeholder="e.g. 10000">
+            <div class="error" id="withdrawal-error">Please enter a valid amount</div>
+        </div>
+        
+        <div class="input-group">
+            <label for="rate">Expected Annual Return Rate (%)</label>
+            <input type="number" id="rate" step="0.01" placeholder="e.g. 8.5">
+            <div class="error" id="rate-error">Please enter a valid rate</div>
+        </div>
+        
+        <div class="input-group">
+            <label for="frequency">Withdrawal Frequency</label>
+            <select id="frequency">
+                <option value="12">Monthly</option>
+                <option value="4">Quarterly</option>
+                <option value="1">Yearly</option>
+            </select>
+        </div>
+        
+        <button id="calculate-btn">Calculate SWP</button>
+        
+        <div class="results" id="results">
+            <h2>Results</h2>
+            <div class="result-item">
+                <span class="result-label">Your funds will last:</span>
+                <span class="result-value" id="duration-result"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Total withdrawals:</span>
+                <span class="result-value" id="total-withdrawals"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Final amount:</span>
+                <span class="result-value" id="final-amount"></span>
+            </div>
+        </div>
+    </div>
+    
+    <table id="withdrawal-table">
+        <thead>
+            <tr>
+                <th>Period</th>
+                <th>Withdrawal (₹)</th>
+                <th>Interest Earned (₹)</th>
+                <th>Remaining Balance (₹)</th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+        </tbody>
+    </table>
+    
+    <script>
+        document.getElementById('calculate-btn').addEventListener('click', calculateSWP);
+        
+        function calculateSWP() {
+            // Reset errors
+            document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
+            
+            // Get input values
+            const principal = parseFloat(document.getElementById('principal').value);
+            const withdrawal = parseFloat(document.getElementById('withdrawal').value);
+            const rate = parseFloat(document.getElementById('rate').value) / 100;
+            const frequency = parseInt(document.getElementById('frequency').value);
+            
+            // Validate inputs
+            let isValid = true;
+            
+            if (isNaN(principal) || principal <= 0) {
+                document.getElementById('principal-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (isNaN(withdrawal) || withdrawal <= 0) {
+                document.getElementById('withdrawal-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (isNaN(rate) || rate <= 0) {
+                document.getElementById('rate-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!isValid) return;
+            
+            // Calculate SWP
+            let remaining = principal;
+            let months = 0;
+            const history = [];
+            
+            while (remaining > 0) {
+                months++;
+                
+                // Apply interest first
+                const interest = remaining * rate / frequency;
+                remaining += interest;
+                
+                // Then withdraw
+                remaining -= withdrawal;
+                if (remaining < 0) {
+                    remaining = 0;
+                }
+                
+                history.push({
+                    period: months,
+                    withdrawal: withdrawal,
+                    interest: interest,
+                    balance: remaining
+                });
+                
+                // Prevent infinite loop for unsustainable withdrawals
+                if (months > 100 * frequency) { // 100 years max
+                    break;
+                }
+            }
+            
+            // Display results
+            const years = Math.floor(months / frequency);
+            const remainingPeriods = months % frequency;
+            
+            let durationText = `${years} ${frequency === 1 ? 'years' : 
+                               frequency === 4 ? 'years and ' + remainingPeriods + ' quarters' : 
+                               'years and ' + remainingPeriods + ' months'}`;
+            
+            document.getElementById('duration-result').textContent = durationText;
+            document.getElementById('total-withdrawals').textContent = 
+                '₹' + (months * withdrawal).toLocaleString('en-IN', {maximumFractionDigits: 2});
+            document.getElementById('final-amount').textContent = 
+                '₹' + remaining.toLocaleString('en-IN', {maximumFractionDigits: 2});
+            
+            document.getElementById('results').style.display = 'block';
+            
+            // Populate table
+            const tableBody = document.getElementById('table-body');
+            tableBody.innerHTML = '';
+            
+            let periodText = '';
+            history.forEach(item => {
+                const row = document.createElement('tr');
+                
+                if (frequency === 12) {
+                    periodText = 'Month ' + item.period;
+                } else if (frequency === 4) {
+                    periodText = 'Quarter ' + item.period;
+                } else {
+                    periodText = 'Year ' + item.period;
+                }
+                
+                row.innerHTML = `
+                    <td>${periodText}</td>
+                    <td>₹${item.withdrawal.toLocaleString('en-IN', {maximumFractionDigits: 2})}</td>
+                    <td>₹${item.interest.toLocaleString('en-IN', {maximumFractionDigits: 2})}</td>
+                    <td>₹${item.balance.toLocaleString('en-IN', {maximumFractionDigits: 2})}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            document.getElementById('withdrawal-table').style.display = 'table';
+            
+            // Scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
