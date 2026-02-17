@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mr Helloji Restaurant Menu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #fff8e1; padding-bottom: 80px; }
+        header { background-color: #2e7d32; color: white; text-align: center; padding: 20px; font-size: 24px; font-weight: bold; }
+        .table-input-section { background: white; padding: 15px; margin: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; border: 2px solid #2e7d32; }
+        .table-input-section input { padding: 12px; width: 85%; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; text-align: center; }
+        .section { margin: 15px; }
+        .section-title { background-color: #2e7d32; color: white; padding: 10px; text-align: center; border-radius: 25px; font-weight: bold; margin-bottom: 15px; }
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px dashed #bbb; background: white; margin-bottom: 8px; border-radius: 8px; }
+        .item-info { display: flex; align-items: center; gap: 12px; }
+        .item-img { width: 55px; height: 55px; border-radius: 8px; object-fit: cover; background: #eee; }
+        .item-details b { display: block; font-size: 16px; color: #333; }
+        .price { font-weight: bold; color: #b71c1c; font-size: 14px; }
+        .add-btn { background-color: #2e7d32; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .cart-bar { position: fixed; bottom: 0; width: 100%; background: #2e7d32; color: white; display: none; justify-content: space-between; align-items: center; padding: 15px 25px; box-sizing: border-box; z-index: 1000; }
+        .checkout-btn { background: white; color: #2e7d32; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; }
+
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: white; margin: 15% auto; padding: 20px; border-radius: 15px; width: 85%; max-width: 400px; text-align: center; }
+        .review-list { text-align: left; margin: 15px 0; max-height: 200px; overflow-y: auto; font-size: 14px; }
+        .confirm-btn { background-color: #2e7d32; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: 10px; }
+        .cancel-btn { background: none; color: #666; border: none; margin-top: 15px; cursor: pointer; }
+        .dt-box { font-size: 12px; color: #555; margin-bottom: 10px; text-align: right; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<header>Mr Helloji Restaurant</header>
+
+<div class="table-input-section">
+    <input type="number" id="tableNum" placeholder="Enter Table Number" min="1">
+</div>
+
+<div class="section">
+    <div class="section-title">Roti / Naan / Paratha</div>
+    <div class="item"><div class="item-info"><img src="https://via.placeholder.com/100?text=Roti" class="item-img"><div class="item-details"><b>Plain Chapati</b><span class="price">₹28</span></div></div><button class="add-btn" onclick="addToCart('Plain Chapati', 28)">ADD</button></div>
+    <div class="item"><div class="item-info"><img src="https://via.placeholder.com/100?text=Naan" class="item-img"><div class="item-details"><b>Butter Naan</b><span class="price">₹60</span></div></div><button class="add-btn" onclick="addToCart('Butter Naan', 60)">ADD</button></div>
+</div>
+
+<div class="section">
+    <div class="section-title">Paneer Special</div>
+    <div class="item"><div class="item-info"><img src="https://via.placeholder.com/100?text=Paneer" class="item-img"><div class="item-details"><b>Matar Paneer</b><span class="price">₹180</span></div></div><button class="add-btn" onclick="addToCart('Matar Paneer', 180)">ADD</button></div>
+    <div class="item"><div class="item-info"><img src="https://via.placeholder.com/100?text=Paneer" class="item-img"><div class="item-details"><b>Kadhai Paneer</b><span class="price">₹200</span></div></div><button class="add-btn" onclick="addToCart('Kadhai Paneer', 200)">ADD</button></div>
+</div>
+
+<div class="section">
+    <div class="section-title">Dal / Biryani</div>
+    <div class="item"><div class="item-info"><img src="https://via.placeholder.com/100?text=Dal" class="item-img"><div class="item-details"><b>Dal Fry</b><span class="price">₹160</span></div></div><button class="add-btn" onclick="addToCart('Dal Fry', 160)">ADD</button></div>
+    <div class="item"><div class="item-info"><img src="https://via.placeholder.com/100?text=Biryani" class="item-img"><div class="item-details"><b>Matka Biryani</b><span class="price">₹280</span></div></div><button class="add-btn" onclick="addToCart('Matka Biryani', 280)">ADD</button></div>
+</div>
+
+<div id="cartBar" class="cart-bar">
+    <div id="cartInfo">Total: ₹0</div>
+    <button class="checkout-btn" onclick="showReview()">Review Order</button>
+</div>
+
+<div id="reviewModal" class="modal">
+    <div class="modal-content">
+        <h3>Order Summary</h3>
+        <div id="dateTimeDisplay" class="dt-box"></div>
+        <div id="reviewList" class="review-list"></div>
+        <hr>
+        <h4 id="reviewTotal"></h4>
+        <button class="confirm-btn" onclick="orderNow()">Send Order (WhatsApp)</button>
+        <button class="cancel-btn" onclick="closeReview()">Close</button>
+    </div>
+</div>
+
+<script>
+    let cart = {};
+    let totalVal = 0;
+
+    function addToCart(name, price) {
+        if (cart[name]) { cart[name].qty += 1; } 
+        else { cart[name] = { price: price, qty: 1 }; }
+        totalVal += price;
+        document.getElementById('cartBar').style.display = 'flex';
+        document.getElementById('cartInfo').innerHTML = `Total: ₹${totalVal}`;
+    }
+
+    // Pakka Logic for 12-hour AM/PM
+    function get12HourTime() {
+        const d = new Date();
+        let hours = d.getHours();
+        let minutes = d.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // 0 ko 12 banana
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        return hours + ':' + minutes + ' ' + ampm;
+    }
+
+    function showReview() {
+        const table = document.getElementById('tableNum').value;
+        if(!table || table <= 0) { alert("Please enter Table Number!"); return; }
+
+        const dateStr = new Date().toLocaleDateString('en-GB'); 
+        const timeStr = get12HourTime();
+
+        document.getElementById('dateTimeDisplay').innerHTML = `Date: ${dateStr} | Time: ${timeStr}`;
+
+        let reviewHtml = "";
+        for (let item in cart) {
+            reviewHtml += `<p>• ${item} x ${cart[item].qty} = ₹${cart[item].qty * cart[item].price}</p>`;
+        }
+        document.getElementById('reviewList').innerHTML = reviewHtml;
+        document.getElementById('reviewTotal').innerHTML = `Total: ₹${totalVal}`;
+        document.getElementById('reviewModal').style.display = "block";
+    }
+
+    function closeReview() { document.getElementById('reviewModal').style.display = "none"; }
+
+    function orderNow() {
+        const table = document.getElementById('tableNum').value;
+        const dateStr = new Date().toLocaleDateString('en-GB');
+        const timeStr = get12HourTime();
+
+        let msg = `*--- MR HELLOJI RESTAURANT ---*%0A`;
+        msg += `*Date:* ${dateStr}%0A`;
+        msg += `*Time:* ${timeStr}%0A`;
+        msg += `*Table:* ${table}%0A%0A`;
+        msg += `*Items Ordered:*%0A`;
+        
+        for (let item in cart) { 
+            msg += `• ${item} x ${cart[item].qty} = ₹${cart[item].qty * cart[item].price}%0A`; 
+        }
+        msg += `%0A*Grand Total: ₹${totalVal}*`;
+        
+        // APNA NUMBER UPDATE KAREIN (91 ke sath)
+        window.open(`https://wa.me/918690506204?text=${msg}`);
+        closeReview();
+    }
+</script>
+</body>
+</html>
+
+
